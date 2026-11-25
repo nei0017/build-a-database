@@ -9,10 +9,26 @@ from storage import Database
 
 NIL = "(nil)"
 ARITIES = (
-    ("SET", 2), ("GET", 1), ("EXIT", 0), ("DEL", 1), ("EXISTS", 1),
-    ("EXPIRE", 2), ("TTL", 1), ("RANGE", 2), ("BEGIN", 0), ("COMMIT", 0),
-    ("ABORT", 0), ("HSET", 3), ("HGET", 2), ("HGETALL", 1), ("LPUSH", 2),
-    ("RPUSH", 2), ("LRANGE", 3), ("LPOP", 1), ("INCR", 1), ("DECR", 1),
+    ("SET", 2),
+    ("GET", 1),
+    ("EXIT", 0),
+    ("DEL", 1),
+    ("EXISTS", 1),
+    ("EXPIRE", 2),
+    ("TTL", 1),
+    ("RANGE", 2),
+    ("BEGIN", 0),
+    ("COMMIT", 0),
+    ("ABORT", 0),
+    ("HSET", 3),
+    ("HGET", 2),
+    ("HGETALL", 1),
+    ("LPUSH", 2),
+    ("RPUSH", 2),
+    ("LRANGE", 3),
+    ("LPOP", 1),
+    ("INCR", 1),
+    ("DECR", 1),
     ("FLUSHDB", 0),
 )
 
@@ -26,7 +42,7 @@ def typed_value(entry, kind, default):
 
 
 def string_value(db, key):
-    return typed_value(db.get(key), "string", NIL)
+    return typed_value(db.get(key), "string", "")
 
 
 def put(key, value, kind="string", deadline=None):
@@ -57,7 +73,7 @@ def list_command(db, command, args, entry):
         size = len(values)
         start = max(0, size + start) if start < 0 else start
         stop = size + stop if stop < 0 else stop
-        return values[start:stop + 1] if stop >= 0 else []
+        return values[start : stop + 1] if stop >= 0 else []
     if command == "LPOP":
         if not values:
             return [NIL]
@@ -107,10 +123,14 @@ def execute(db, command, args):
         return ["OK"]
     if command == "RANGE":
         start, end = args
-        return sorted(
-            name for name, _ in db.index.entries
-            if start <= name <= end and db.get(name) is not None
+        keys = sorted(
+            name
+            for name, _ in db.index.entries
+            if (start == '""' or start <= name)
+            and (end == '""' or name <= end)
+            and db.get(name) is not None
         )
+        return [*keys, "END"]
 
     key = args[0]
     entry = db.get(key)
