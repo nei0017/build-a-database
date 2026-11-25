@@ -170,20 +170,19 @@ def execute(db, command, args):
 
 def main():
     db = Database("data.db")
-    with db.log:
-        for line in sys.stdin:
-            tokens = line.split()
-            if not tokens:
-                continue
-            command, *args = tokens
-            try:
-                output = execute(db, command.upper(), args)
-            except (ValueError, OverflowError) as error:
-                output = [f"ERR {error}"]
-            if output is None:
-                break
-            if output:
-                print(*output, sep="\n", flush=True)
+    for line in sys.stdin:
+        tokens = line.split()
+        if not tokens:
+            continue
+        command, *args = tokens
+        try:
+            output = execute(db, command.upper(), args)
+        except (ValueError, OverflowError) as error:
+            output = [f"ERR {error}"]
+        if output is None:
+            break
+        if output:
+            print(*output, sep="\n", flush=True)
 
 
 if __name__ == "__main__":

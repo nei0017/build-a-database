@@ -134,19 +134,16 @@ class DatabaseTests(unittest.TestCase):
         path = self.directory / "data.db"
         with patch("time.time", return_value=100):
             db = Database(path)
-            with db.log:
-                execute(db, "SET", ["a", "value"])
-                self.assertEqual(execute(db, "TTL", ["a"]), [-1])
-                self.assertEqual(execute(db, "EXPIRE", ["a", "10"]), [1])
+            execute(db, "SET", ["a", "value"])
+            self.assertEqual(execute(db, "TTL", ["a"]), [-1])
+            self.assertEqual(execute(db, "EXPIRE", ["a", "10"]), [1])
         with patch("time.time", return_value=105):
             db = Database(path)
-            with db.log:
-                self.assertEqual(execute(db, "TTL", ["a"]), [5])
+            self.assertEqual(execute(db, "TTL", ["a"]), [5])
         with patch("time.time", return_value=111):
             db = Database(path)
-            with db.log:
-                self.assertEqual(execute(db, "GET", ["a"]), [""])
-                self.assertEqual(execute(db, "TTL", ["a"]), [-2])
+            self.assertEqual(execute(db, "GET", ["a"]), [""])
+            self.assertEqual(execute(db, "TTL", ["a"]), [-2])
 
     def test_replay_recovers_incomplete_tail(self):
         self.commands("SET first saved")

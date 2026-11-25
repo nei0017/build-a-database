@@ -21,7 +21,7 @@ class Database:
                     os.fsync(log.fileno())
                     break
                 self.apply(json.loads(line))
-        self.log = open(path, "ab")
+        self.path = path
 
     def apply(self, changes):
         for action, *args in changes:
@@ -35,9 +35,10 @@ class Database:
 
     def append(self, changes):
         if changes:
-            self.log.write(json.dumps(changes).encode("utf-8") + b"\n")
-            self.log.flush()
-            os.fsync(self.log.fileno())
+            with open(self.path, "ab") as log:
+                log.write(json.dumps(changes).encode("utf-8") + b"\n")
+                log.flush()
+                os.fsync(log.fileno())
 
     def write(self, *changes):
         if self.pending is None:
